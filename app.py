@@ -1,11 +1,17 @@
 from flask import Flask, render_template, request
+import sqlite3
+
 from math_generator import generate_math_problem
 from submission_handler import process_submission
+
+import sqlite3
 
 app = Flask(__name__)
 
 # Global variable for the number of problems
 NUMBER_OF_PROBLEMS = 5
+LOW_RANGE = 1
+HIGH_RANGE = 10
 
 
 @app.route("/")
@@ -17,11 +23,9 @@ def index():
 def test():
     problems = []
     operation = "+"  # Choose the operation
-    low_range = 1
-    high_range = 10
 
     for _ in range(NUMBER_OF_PROBLEMS):
-        problem, answer = generate_math_problem(operation, low_range, high_range)
+        problem, answer = generate_math_problem(operation, LOW_RANGE, HIGH_RANGE)
         problems.append((problem, answer))
 
     return render_template("test.html", problems=problems)
@@ -45,8 +49,15 @@ def submit_answers():
         if key.startswith("correct_answer_")
     }
 
+    operation = "+"  # Retrieve the operation used for the test
+
     feedback, score = process_submission(
-        user_answers, correct_answers, NUMBER_OF_PROBLEMS
+        user_answers,
+        correct_answers,
+        NUMBER_OF_PROBLEMS,
+        operation,
+        LOW_RANGE,
+        HIGH_RANGE,
     )
     return render_template("results.html", feedback=feedback, score=score)
 

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- [Head contents] -->
+</head>
+<body>
+    <h1>Results</h1>
+    <ul>
+        {% for feedback_message in feedback %}
+            <li>{{ feedback_message }}</li>
+        {% endfor %}
+    </ul>
+    <p>Your score: {{ score }}%</p>
+    <a href="/">Try again</a>
+</body>
+</html>

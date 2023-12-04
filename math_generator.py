@@ -24,4 +24,7 @@ def generate_math_problem(operation, low, high):
         raise ValueError("Internal Error in generate_math_problem. Invalid operation.")
 
     problem = f"{num1} {operation} {num2}"
-    return problem, answer
+    operand1 = num1
+    operand2 = num2
+
+    return problem, answer, operand1, operand2

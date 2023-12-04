@@ -11,6 +11,8 @@ def create_database():
                         id INTEGER PRIMARY KEY,
                         datetime TEXT,
                         operation TEXT,
+                        operand1 INTEGER, 
+                        operand2 INTEGER, 
                         low_range INTEGER,
                         high_range INTEGER)"""
     )

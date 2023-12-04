@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from datetime import datetime
 import sqlite3
 
 from math_generator import generate_math_problem
@@ -8,10 +9,11 @@ import sqlite3
 
 app = Flask(__name__)
 
-# Global variable for the number of problems
-NUMBER_OF_PROBLEMS = 5
-LOW_RANGE = 1
-HIGH_RANGE = 10
+# Global settings
+DEFAULT_NUMBER_OF_PROBLEMS = 5
+DEFAULT_LOW_RANGE = 1
+DEFAULT_HIGH_RANGE = 10
+DEFAULT_OPERATION = "+"
 
 
 @app.route("/")
@@ -22,11 +24,23 @@ def index():
 @app.route("/test")
 def test():
     problems = []
-    operation = "+"  # Choose the operation
+    operation = DEFAULT_OPERATION
+    low_range = DEFAULT_LOW_RANGE
+    high_range = DEFAULT_HIGH_RANGE
+    nb_problems = DEFAULT_NUMBER_OF_PROBLEMS
 
-    for _ in range(NUMBER_OF_PROBLEMS):
-        problem, answer = generate_math_problem(operation, LOW_RANGE, HIGH_RANGE)
-        problems.append((problem, answer))
+    for _ in range(nb_problems):
+        problem, answer, operand1, operand2 = generate_math_problem(
+            operation, low_range, high_range
+        )
+        problems.append(
+            {
+                "problem": problem,
+                "answer": answer,
+                "operand1": operand1,
+                "operand2": operand2,
+            }
+        )
 
     return render_template("test.html", problems=problems)
 
@@ -49,16 +63,29 @@ def submit_answers():
         if key.startswith("correct_answer_")
     }
 
-    operation = "+"  # Retrieve the operation used for the test
+    operation = DEFAULT_OPERATION
+    low_range = DEFAULT_LOW_RANGE
+    high_range = DEFAULT_HIGH_RANGE
+    nb_problems = DEFAULT_NUMBER_OF_PROBLEMS
 
-    feedback, score = process_submission(
-        user_answers,
-        correct_answers,
-        NUMBER_OF_PROBLEMS,
-        operation,
-        LOW_RANGE,
-        HIGH_RANGE,
+    # Connect to the database
+    connection = sqlite3.connect("math_tests.db")
+    cursor = connection.cursor()
+
+    # Insert test details and get test_id
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        "INSERT INTO tests (datetime, operation, low_range, high_range) VALUES (?, ?, ?, ?)",
+        (current_time, DEFAULT_OPERATION, DEFAULT_LOW_RANGE, DEFAULT_HIGH_RANGE),
     )
+    test_id = cursor.lastrowid
+
+    # Call process_submission with the test_id
+    feedback, score = process_submission(user_answers, problems, test_id)
+
+    # Close the database connection
+    connection.close()
+
     return render_template("results.html", feedback=feedback, score=score)
 
 
